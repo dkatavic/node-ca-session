@@ -6,7 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "“Domagoj",
+	"repository": {
+    "type": "git",
+    "url": "git@github.com:dkatavic/node-ca-session.git"
+  },
+  "author": "“Domagoj Katavic",
   "license": "ISC",
   "dependencies": {
     "moment": "^2.10.3",
