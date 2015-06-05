@@ -1,12 +1,12 @@
 {
-  "name": "session",
+  "name": "ca-session-service",
   "version": "0.0.1",
   "description": "CA Sesstion Service",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha -u tdd"
   },
-	"repository": {
+  "repository": {
     "type": "git",
     "url": "git@github.com:dkatavic/node-ca-session.git"
   },
@@ -16,6 +16,7 @@
     "moment": "^2.10.3"
   },
   "devDependencies": {
-    "mocha": "^2.2.5"
+    "mocha": "^2.2.5",
+    "should": "^6.0.3"
   }
 }

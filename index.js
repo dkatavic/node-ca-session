@@ -7,12 +7,13 @@ var service = {
 	
 	validate: function(token, cb){
 		
-		client.hgetall(token, function(err, session) {
+		client.hgetall(token, function(err, session){
 
-			if (err)
+			if (err){
 				return cb(err, null);
+			}
 
-			if (session && session.user_id) {
+			if (session && session.user_id){
 				return cb(null, session);
 			}
 
@@ -24,10 +25,10 @@ var service = {
 	
 	create: function(params, cb){
 
-		if (!params) {
+		if (!params){
 			throw new Error("Invalid params");
 		}
-		if (!params.user_id) {
+		if (!params.user_id){
 			throw new Error("Missing user_id");
 		}
 
@@ -89,10 +90,10 @@ var initialization = {
 
 	init: function(params) {
 		
-		if (!params || !params.redis_client){
+		if (!params || !params.redis_client) {
 			throw new Error("Redis client not provided");
 		}
-		if (typeof params.redis_client !== 'object'){
+		if (typeof params.redis_client !== 'object') {
 			throw new Error("redis_client needs to be a object");
 		}
 
@@ -100,33 +101,17 @@ var initialization = {
 
 		return service;
 		
-		/*
-		Testing connection example. problem is that this is async method,
-		but I should find sync method for testing
-		//test connection
-		var test_value = "some_value", test_key = "test_key";
-		client.set(test_key, test_value);
-		client.get(test_key, function (err, reply) {
-			if(err){
-				throw err;
-			}
-			client.del(test_key);
-			//successful connection has been established. return object with methods
-    });
-		*/
-		
 	},
 	
-	getService: function(){
+	getService: function() {
 		
-		if (!client){
+		if (!client) {
 			throw new Error("Need to initialize session first. Call init() method");
 		}
 		
 		return service;
 		
 	},
-	
 
 };
 

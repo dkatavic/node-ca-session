@@ -6,7 +6,7 @@ var user_id = Math.floor(Math.random() * (10000 - 1)) + 1;
 var token;
 
 suite('initialization', function () {
- test('should initialize correctly', function (done) {
+ test('should get service instance', function (done) {
    assert.equal('object', typeof index.init({redis_client: new redis.createClient()}));
    // must call done() so that mocha know that we are... done.
    // Useful for async tests.
