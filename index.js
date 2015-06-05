@@ -1,9 +1,8 @@
-var redis = require('redis');
 var moment = require('moment');
 var client;
 
 
-var interface = {
+var service = {
 	
 	validate: function(token, cb){
 		
@@ -87,40 +86,22 @@ var interface = {
 
 var initialization = {
 
-	init: function(redis_credentials) {
-
-		var port, host;
+	init: function(params) {
 		
-
-		//validation
-		if (!redis_credentials) {
-			port = 6379;
-			host = "127.0.0.1";
-		} else {
-
-			if (typeof redis_credentials !== 'object') {
-				throw new Error("init parameter needs to be a object");
-			}
-
-
-			if (redis_credentials.port && isNaN(redis_credentials.port)) {
-				throw new Error("redis port needs to be number!");
-			}
-			if (redis_credentials.host && (typeof redis_credentials.host != "string")) {
-				throw new Error("redis host needs to be a string!");
-			}
-
-			port = redis_credentials.port || 6379;
-			host = redis_credentials.host || "127.0.0.1";
-
+		if (!params || !params.redis_client){
+			throw new Error("Redis client not provided");
+		}
+		if (typeof params.redis_client !== 'object'){
+			throw new Error("redis_client needs to be a object");
 		}
 
-		client = new redis.createClient(port, host);
+		client = params.redis_client;
 
-		return interface;
+		return service;
 		
 		/*
-		Testing connection example. problem is that it is async
+		Testing connection example. problem is that this is async method,
+		but I should find sync method for testing
 		//test connection
 		var test_value = "some_value", test_key = "test_key";
 		client.set(test_key, test_value);
@@ -135,7 +116,16 @@ var initialization = {
 		
 	},
 	
-	interface: interface,
+	getService: function(){
+		
+		if (!client){
+			throw new Error("Need to initialize session first. Call init() method");
+		}
+		
+		return service;
+		
+	},
+	
 
 };
 
