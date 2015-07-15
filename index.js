@@ -75,7 +75,7 @@ var service = {
 					client.expire(token, 5 * 3600);
 				} catch (e) {}
 				
-				token.user_id = parseInt(token.user_id);
+				data.user_id = parseInt(data.user_id);
 
 				data.token = token;
 				return cb(null, data);
