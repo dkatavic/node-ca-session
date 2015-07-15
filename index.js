@@ -14,6 +14,7 @@ var service = {
 			}
 
 			if (session && session.user_id){
+				session.user_id = parseInt(session.user_id);
 				return cb(null, session);
 			}
 
