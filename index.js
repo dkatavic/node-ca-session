@@ -57,6 +57,7 @@ var service = {
 					user_id: params.user_id,
 					sid: params.sid,
 					ip: params.ip,
+          betaAccess: 1,
 					device: params.device,
 					createdAt: moment().utc().format('YYYY-MM-DD HH:mm:ss'),
 				};
