@@ -14,7 +14,14 @@ var service = {
 			}
 
 			if (session && session.user_id){
+        
 				session.user_id = parseInt(session.user_id);
+        
+        //
+        // Prolong the sessions for another two hours
+        //
+        client.expire(token, 2 * 60 * 60);
+        
 				return cb(null, session);
 			}
 
