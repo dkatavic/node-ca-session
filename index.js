@@ -3,8 +3,10 @@ var crypto = require('crypto');
 var client;
 
 // default token life time. Token's duration is prolonged
-// after each validation
+// after each validation for the value of token_TTL
 var token_TTL = 2 * 3600;
+// tokens lenght in bytes
+var token_bytes_length = 24;
 
 var service = {
 
@@ -52,7 +54,7 @@ var service = {
 				throw new Error("Can't generate unique token");
 			}
 
-			token = crypto.randomBytes(24).toString('hex');
+			token = crypto.randomBytes(token_bytes_length).toString('hex');
 
 			var result = client.hgetall(token, function(err, session) {
 				
@@ -115,9 +117,19 @@ var initialization = {
 		
 		if (params.token_TTL) {
 			if (typeof params.token_TTL !== 'number') {
-				throw new Error("token_TTL should be a number");
+				throw new Error("token_TTL should be a Number");
 			}
 			token_TTL = params.token_TTL;
+		}
+		
+		if (params.token_bytes_length) {
+			if (typeof params.token_bytes_length !== 'number') {
+				throw new Error("token_bytes_length should be a Number");
+			}
+			if (params.token_bytes_length <= 0) {
+				throw new Error("token_bytes_length should be positive Number")
+			}
+			token_bytes_length = params.token_bytes_length;
 		}
 
 		client = params.redis_client;
@@ -137,7 +149,5 @@ var initialization = {
 	},
 
 };
-
-
 
 module.exports = initialization;
