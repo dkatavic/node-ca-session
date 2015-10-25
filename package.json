@@ -1,7 +1,7 @@
 {
   "name": "ca-session-service",
   "version": "0.1.0",
-  "description": "Module for session handling. This module generates unique token for specified session data and stores it in Redis DB. Session data can be validated using validate method. With each validation tokens duration is prolonged for specified TTL.",
+  "description": "Module for session handling. This module generates unique token for specified data and stores it in Redis DB. Session data can be validated using validate method. With each validation tokens duration is prolonged for specified TTL.",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha -u tdd"

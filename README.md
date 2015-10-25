@@ -1,5 +1,5 @@
 # node-ca-session
-Module for session handling. This module generates unique token for specified session data and stores it in Redis DB. Session data
+Module for session handling. This module generates unique token for specified data and stores it in Redis DB. Session data
 can be validated using validate method. With each validation tokens duration is prolonged for specified TTL.
 
 Supports TTL (Time To Live)
