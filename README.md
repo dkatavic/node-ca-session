@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/dkatavic/node-ca-session.svg)](https://travis-ci.org/dkatavic/node-ca-session)
 # node-ca-session
 Module for session handling. This module generates unique token for specified data and stores it in Redis DB. Session data
 can be validated using validate method. With each validation tokens duration is prolonged for specified TTL.
