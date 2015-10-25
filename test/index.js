@@ -1,13 +1,13 @@
 var assert = require('assert');
 var redis = require('redis');
-var index = require('./../index');
+var session_service = require('./../index');
 
 var user_id = Math.floor(Math.random() * (10000 - 1)) + 1;
 var token;
 
-suite('initialization', function () {
- test('should get service instance', function (done) {
-   assert.equal('object', typeof index.init({redis_client: new redis.createClient()}));
+suite('initialization', function () {//because of invalid token_TTL
+ test('should initialize service instance', function (done) {
+   assert.equal('object', typeof session_service.init({redis_client: new redis.createClient()}));
    // must call done() so that mocha know that we are... done.
    // Useful for async tests.
    done();
@@ -16,14 +16,14 @@ suite('initialization', function () {
 
 suite('session service', function(){
 	test('should create session', function(done){
-		index.getService().create({user_id: user_id}, function(err, data){
+		session_service.getService().create({user_id: user_id}, function(err, data){
 			assert.equal("string", typeof  data.token);
 			token = data.token;
 			done();
 		});
 	});
 	test('should validate session', function(done){
-		index.getService().validate(token, function(err, data){
+		session_service.getService().validate(token, function(err, data){
 			assert.equal(user_id,  data.user_id);
 			done();
 		});
