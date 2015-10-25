@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "mocha": "^2.2.5",
-    "should": "^6.0.3"
+    "should": "^6.0.3",
+    "redis": "^2.2.5"
   }
 }
