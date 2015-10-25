@@ -15,7 +15,6 @@ npm install ca-session-service
 var redis = require('redis');
 var ca_session = require('ca-session-service');
 
-//SessionService name is for compability
 var SessionService = ca_session.init({
 redis_client: new redis.createClient(PORT,HOST)
 });

@@ -1,5 +1,7 @@
 var moment = require('moment');
 var crypto = require('crypto');
+var _ = require('lodash');
+var Promise = require('bluebird');
 var client;
 
 // default token life time. Token's duration is prolonged
@@ -12,93 +14,102 @@ var service = {
 
 	validate: function(token, cb) {
 
-		client.hgetall(token, function(err, session) {
+		return new Promise(function(resolve, reject) {
 
-			if (err) {
-				return cb(err);
-			}
+			client.hgetall(token, function(err, session) {
 
-			if (!session) {
+				if (err) {
+					return reject(err);
+				}
 
-				return cb("Invalid token");
+				if (!session) {
 
-			}
+					return reject("Invalid token");
 
-			if (session.user_id) {
-				session.user_id = parseInt(session.user_id);
-			}
+				}
 
-			//
-			// Prolong the sessions for token_TTL
-			//
-			client.expire(token, token_TTL);
+				if (session.user_id) {
+					session.user_id = parseInt(session.user_id);
+				}
 
-			return cb(null, session);
-			
-		});
+				//
+				// Prolong the sessions for token_TTL
+				//
+				client.expire(token, token_TTL);
+
+				return resolve(session);
+
+			});
+
+		}).nodeify(cb);
 
 	},
 
 	create: function(params, cb) {
 
-		if (!params) {
-			throw new Error("Invalid params");
-		}
+		return new Promise(function(resolve, reject) {
 
-		var token = "";
-		var i = 0, limit = 20;
-
-		var generateUniqueToken = function(params) {
-
-			if (i++ >= limit) {
-				throw new Error("Can't generate unique token");
+			if (!params) {
+				throw new Error("Invalid params");
 			}
 
-			token = crypto.randomBytes(token_bytes_length).toString('hex');
+			var data = _.clone(params);
 
-			var result = client.hgetall(token, function(err, session) {
-				
-				if (err) {
-					return cb(err);
-				}
-				
-				if (session) {
-					//	There is already specified token in DB, generate new one
-					return generateUniqueToken(params);
-				}
-				
-				if (!params.createdAt) {
-					params.createdAt = moment().utc().format('YYYY-MM-DD HH:mm:ss');
+			var token = "";
+			var i = 0,
+				limit = 20;
+
+			var generateUniqueToken = function(data) {
+
+				if (i++ >= limit) {
+					throw new Error("Can't generate unique token");
 				}
 
-				client.hmset(token, params, function(err, data) {});
+				token = crypto.randomBytes(token_bytes_length).toString('hex');
 
-				//tokens are valid for token_TTL
-				client.expire(token, token_TTL);
+				client.hgetall(token, function(err, session) {
 
-				// keep track of tokens for some user_id (so called redis custom idexing)
-				// TODO: remove custom indexing in future version
-				// TODO: if not removed, allow configuration of custom indexing during init
-				if (params.user_id) {
-					try {
-						client.sadd('user_id:' + params.user_id, JSON.stringify({
-							token: token,
-							sid: params.sid,
-						}));
-						client.expire(token, token_TTL * 100);
+					if (err) {
+						return reject(err);
 					}
-					catch (e) {}
-				}
 
-				params.user_id = parseInt(params.user_id);
+					if (session) {
+						//	There is already specified token in DB, generate new one
+						return generateUniqueToken(data);
+					}
 
-				params.token = token;
-				return cb(null, params);
+					if (!data.createdAt) {
+						data.createdAt = moment().utc().format('YYYY-MM-DD HH:mm:ss');
+					}
 
-			});
-		};
+					client.hmset(token, data);
 
-		generateUniqueToken(params);
+					//tokens are valid for token_TTL
+					client.expire(token, token_TTL);
+
+					// keep track of tokens for some user_id (so called redis custom idexing)
+					// TODO: remove custom indexing in future version
+					// TODO: if not removed, allow configuration of custom indexing during init
+					if (data.user_id) {
+						try {
+							client.sadd('user_id:' + data.user_id, JSON.stringify({
+								token: token,
+								sid: data.sid,
+							}));
+							client.expire(token, token_TTL * 100);
+						}
+						catch (e) {}
+					}
+
+					data.token = token;
+					return resolve(data);
+
+				});
+			};
+
+			generateUniqueToken(data);
+
+		}).nodeify(cb);
 
 	},
 
@@ -114,14 +125,14 @@ var initialization = {
 		if (typeof params.redis_client !== 'object') {
 			throw new Error("redis_client needs to be a object");
 		}
-		
+
 		if (params.token_TTL) {
 			if (typeof params.token_TTL !== 'number') {
 				throw new Error("token_TTL should be a Number");
 			}
 			token_TTL = params.token_TTL;
 		}
-		
+
 		if (params.token_bytes_length) {
 			if (typeof params.token_bytes_length !== 'number') {
 				throw new Error("token_bytes_length should be a Number");

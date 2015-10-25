@@ -22,8 +22,20 @@ suite('session service', function(){
 			done();
 		});
 	});
+	test('should create session using promise', function(done){
+		session_service.getService().create({user_id: user_id}).then(function(data){
+			assert.equal("string", typeof  data.token);
+			done();
+		});
+	});
 	test('should validate session', function(done){
 		session_service.getService().validate(token, function(err, data){
+			assert.equal(user_id,  data.user_id);
+			done();
+		});
+	});
+	test('should validate session using promise', function(done){
+		session_service.getService().validate(token).then(function(data){
 			assert.equal(user_id,  data.user_id);
 			done();
 		});
