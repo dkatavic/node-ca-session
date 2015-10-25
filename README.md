@@ -46,18 +46,3 @@ SessionService.validate(TOKEN,
 ```bash
 npm test
 ```
-
-#For Bobo
-to make it compatible with older version, replace SessionService.js with
-
-```node
-var redis = require('redis');
-var ca_session_service = require('ca-session-service');
-
-module.exports = ca_session_service.init({
-	redis_client: new redis.createClient(sails.config.redis.port,sails.config.redis.host)
-});
-```
-
-and remove initialization of previus session service in bootstrap.js
-
