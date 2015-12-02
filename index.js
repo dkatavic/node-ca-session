@@ -96,7 +96,7 @@ var service = {
 								token: token,
 								sid: data.sid,
 							}));
-							client.expire(token, token_TTL * 100);
+							client.expire('user_id:' + data.user_id, token_TTL * 100);
 						}
 						catch (e) {}
 					}
