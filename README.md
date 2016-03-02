@@ -17,17 +17,19 @@ npm install ca-session-service
 
 ```node
 var redis = require('redis');
-var ca_session = require('ca-session-service');
+var CaSession = require('ca-session-service');
 
-var SessionService = ca_session.init({
+var sessionService = CaSession.init({
     redis_client: new redis.createClient(PORT,HOST)
 });
 ```
 
+"ca-session-service" depends on npm package "redis" (v ^2.4.2). Redis isn't hard dependecy so that user can be more flexible in configuring and authenticating with Redis server.
+
 You can override token's Time To Live and bytes lenght
 
 ```node
-var SessionService = ca_session.init({
+var sessionService = CaSession.init({
     redis_client: new redis.createClient(PORT,HOST),
     token_TTL: 2 * 3600, // TTL in seconds, defaults to 2h
     token_bytes_length: 24 // Tokens bytes lenght, defaults to 24 bytes
@@ -37,7 +39,7 @@ var SessionService = ca_session.init({
 ### create session
 
 ```node
-SessionService.create({user_id: 150, foo: 'bar'}, 
+sessionService.create({user_id: 150, foo: 'bar'}, 
     function(err, session){
         console.log(session);
         //{token: "GENERATED_TOKEN_VALUE", user_id: 150, foo: "bar", createdAt: "2015-10-25 20:14:10"}
@@ -47,7 +49,7 @@ SessionService.create({user_id: 150, foo: 'bar'},
 ### validate session
 
 ```node
-SessionService.validate(TOKEN, 
+sessionService.validate(TOKEN, 
     function(err, session){
         console.log(session);
         //{user_id: 150, foo: "bar", createdAt: "2015-10-25 20:14:10"}
@@ -60,7 +62,7 @@ All methods support promise and callback pattern
 ### validate session using promise
 
 ```node
-SessionService.validate(TOKEN)
+sessionService.validate(TOKEN)
 .then(function(session){
     console.log(session);
     //{user_id: 150, foo: "bar", createdAt: "2015-10-25 20:14:10"}
@@ -69,6 +71,37 @@ SessionService.validate(TOKEN)
     console.log(err);
 });
 ```
+
+### Secondary indexes
+
+ca-session-service supports secondary indexes. If custom index is set, when session is created, extra new key-value pair is created, where key is equal to `"{$index_property}:{$index_value}"` and value of created token. For example, if you 
+create session with data `{user_id: 150}` and property user_id is secondary index, after creating session, ca-session-service will for key `"user_id:150"` add member with value of token.
+This can be used for keeping track of all active user's token's, and deleting them upon closing account.
+
+```node
+sessionService.addIndex('user_id');
+sessionService.create({user_id: 150, foo: 'bar'}, 
+    function(err, session){
+        console.log(session);
+        //{token: "SOME_RANDOM_TOKEN", user_id: 150, foo: "bar", createdAt: "2015-10-25 20:14:10"}
+        
+        // as defined in custom indexes, "user_id:150" key now contains all associated tokens
+        redis_client.smembers("user_id:150", function(err, members){
+        
+            // members contain all tokens
+            console.log(members);
+            // ["SOME_RANDOM_TOKEN"]
+            
+            // now you can delete all tokens from redis db associated with user
+            members.forEach(function(token){
+                redis_client.del(token);
+            });
+            
+        });
+        
+    });
+```
+
 
 # Test
 

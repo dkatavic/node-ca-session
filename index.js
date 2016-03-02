@@ -9,6 +9,8 @@ var client;
 var token_TTL = 2 * 3600;
 // tokens lenght in bytes
 var token_bytes_length = 24;
+// secondary indexes
+var sec_indexes = [];
 
 var service = {
 
@@ -36,6 +38,16 @@ var service = {
 				// Prolong the sessions for token_TTL
 				//
 				client.expire(token, token_TTL);
+				
+				//
+				//  Prolong secondary indexes for token_TTL
+				//
+				sec_indexes.forEach(function(elem){
+					if (session[elem] || session[elem] === 0 || session[elem] === "") {
+						var key = elem + ":" + session[elem];
+						client.expire(key, token_TTL);
+					}
+				});
 
 				return resolve(session);
 
@@ -53,10 +65,9 @@ var service = {
 				throw new Error("Invalid params");
 			}
 
-			var data = _.clone(params);
-
-			var token = "";
-			var i = 0,
+			var data = _.clone(params),
+				token,
+				i = 0,
 				limit = 20;
 
 			var generateUniqueToken = function(data) {
@@ -82,24 +93,20 @@ var service = {
 						data.createdAt = moment().utc().format('YYYY-MM-DD HH:mm:ss');
 					}
 
-					client.hmset(token, data);
-
-					//tokens are valid for token_TTL
-					client.expire(token, token_TTL);
-
-					// keep track of tokens for some user_id (so called redis custom idexing)
-					// TODO: remove custom indexing in future version
-					// TODO: if not removed, allow configuration of custom indexing during init
-					if (data.user_id) {
-						try {
-							client.sadd('user_id:' + data.user_id, JSON.stringify({
-								token: token,
-								sid: data.sid,
-							}));
-							client.expire('user_id:' + data.user_id, token_TTL * 100);
+					client.hmset(token, data, function(){
+						//tokens are valid for token_TTL
+						client.expire(token, token_TTL);
+					});
+					
+					// add custom idexes
+					sec_indexes.forEach(function(elem){
+						if (data[elem] || data[elem] === 0 || data[elem] === "") {
+							var key = elem + ":" + data[elem];
+							client.sadd(key, token, function(){
+								client.expire(key, token_TTL);
+							});
 						}
-						catch (e) {}
-					}
+					});
 
 					data.token = token;
 					return resolve(data);
@@ -112,6 +119,30 @@ var service = {
 		}).nodeify(cb);
 
 	},
+	
+	/**
+	 * @method addIndex
+	 * @param {String} index Secondary index
+	 * @return {String} index
+	 */
+	
+	addIndex: function(index){
+		if (typeof index !== "string")
+			throw new Error("index should be type of string");
+		sec_indexes.push(index);
+		return index;
+	},
+	
+	/**
+	 * @method removeIndex
+	 * @param {String} index Secondary index
+	 * @return {String} index
+	 */
+	
+	removeIndex: function(index){
+		sec_indexes.pop(index);
+		return index;
+	}
 
 };
 
