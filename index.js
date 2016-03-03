@@ -1,8 +1,8 @@
-var moment = require('moment');
-var crypto = require('crypto');
-var _ = require('lodash');
-var Promise = require('bluebird');
-var client;
+var moment = require('moment'),
+	crypto = require('crypto'),
+	_ = require('lodash'),
+	Promise = require('bluebird'),
+	client;
 
 // default token life time. Token's duration is prolonged
 // after each validation for the value of token_TTL
