@@ -74,8 +74,8 @@ sessionService.validate(TOKEN)
 
 ### Secondary indexes
 
-ca-session-service supports secondary indexes. If custom index is set, when session is created, extra new key-value pair is created, where key is equal to `"{$index_property}:{$index_value}"` and value of created token. For example, if you 
-create session with data `{user_id: 150}` and property user_id is secondary index, after creating session, ca-session-service will for key `"user_id:150"` add member with value of token.
+ca-session-service supports secondary indexes. If custom index is set, when session is created, extra new key is created, where key is equal to `"{$index_property}:{$index_value}"`. Every token that belongs to specified index is added as member to set stored at key. For example, if you 
+create session with data `{user_id: 150}` and property user_id is secondary index, after creating session, ca-session-service will add token as member of key `"user_id:150"`.
 This can be used for keeping track of all active user's token's, and deleting them upon closing account.
 
 ```node
